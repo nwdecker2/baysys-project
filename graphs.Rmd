@@ -1,0 +1,36 @@
+---
+title: "baysys graphs"
+author: "Nick Decker"
+date: "2023-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+```{r data load, include=FALSE}
+sites <- read_csv(here("baysys_sites.csv")) %>% 
+  clean_names()
+
+underway <- read_csv(here("baysys_uw.csv")) %>% 
+  clean_names()
+
+compL <- read_csv(here("baysys_comp_L.csv")) %>% 
+  clean_names()
+```
+
+```{r graphs}
+compL %>% 
+  ggplot() +
+  geom_point(aes(x = avg_pco2sw, y = p_co2_out_matm, colour = t_c))+
+  geom_smooth(aes(x = avg_pco2sw, y = p_co2_out_matm), method = lm)+
+  theme_bw()
+```
