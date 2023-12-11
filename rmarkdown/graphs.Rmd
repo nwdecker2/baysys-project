@@ -1,0 +1,251 @@
+---
+title: "baysys graphs"
+author: "Nick Decker"
+date: "2023-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(here)
+library(patchwork)
+```
+
+```{r data load, include=FALSE}
+sites <- read_csv(here("data/baysys_sites.csv")) %>% 
+  clean_names()
+
+underway <- read_csv(here("data/baysys_uw.csv")) %>% 
+  clean_names()
+
+compL <- read_csv(here("data/baysys_combined_l.csv")) %>% 
+  clean_names() %>% 
+  rename(pco2_out = p_co2_out_matm,
+         pco2_meas = avg_pco2sw) %>% 
+  mutate(difference = pco2_meas - pco2_out)
+
+compM <- read_csv(here("data/baysys_combined_m10.csv")) %>% 
+  clean_names() %>% 
+  rename(pco2_out = p_co2_out_matm,
+         pco2_meas = avg_pco2sw) %>% 
+  mutate(difference = pco2_meas - pco2_out)
+```
+
+```{r models}
+model_L <- lm(pco2_out ~ pco2_meas, data = compL)
+model_L_sum <- summary(model_L)
+
+
+model_M <- lm(pco2_out ~ pco2_meas, data = compM)
+model_M_sum <- summary(model_M)
+
+```
+
+```{r graphs (salinity)}
+salL <- 
+compL %>% 
+  ggplot() +
+  geom_point(aes(x = pco2_meas, y = pco2_out, colour = s)) +
+  geom_smooth(aes(x = pco2_meas, y = pco2_out), method = lm, se = FALSE) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "black") +
+  theme_bw() +
+  xlim(175, 575) +
+  ylim(175, 575) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c("y = ",
+                         round(model_L$coefficients[[2]], digits = 2),
+                         "x",
+                         " + ",
+                         round(model_L$coefficients[[1]], digits = 2),
+                         sep = ""),
+           hjust = 0,
+           vjust = 0) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c('R^2 ==',
+                         round(model_L_sum$r.squared, digits = 2)),
+           parse = TRUE,
+           hjust = 0,
+           vjust = 1.5) +
+  labs(
+    x = expression(Measured~pCO[2]~(mu*atm)),
+    y = expression(Calulated~pCO[2]~(mu*atm)),
+    colour = "Temperature (c)",
+    title = "Lueker et al., 2000"
+  )
+
+salM <- 
+compM %>% 
+    ggplot() +
+  geom_point(aes(x = pco2_meas, y = pco2_out, colour = s)) +
+  geom_smooth(aes(x = pco2_meas, y = pco2_out), method = lm, se = FALSE) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "black") +
+  theme_bw() +
+  xlim(175, 575) +
+  ylim(175, 575) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c("y = ",
+                         round(model_M$coefficients[[2]], digits = 2),
+                         "x",
+                         " + ",
+                         round(model_M$coefficients[[1]], digits = 2),
+                         sep = ""),
+           hjust = 0,
+           vjust = 0) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c('R^2 ==',
+                         round(model_M_sum$r.squared, digits = 2)),
+           parse = TRUE,
+           hjust = 0,
+           vjust = 1.5) +
+  labs(
+    x = expression(Measured~pCO[2]~(mu*atm)),
+    y = expression(Calulated~pCO[2]~(mu*atm)),
+    colour = "Temperature (c)",
+    title = "Millero, 2010"
+  )
+
+salinity_plots <- salM +
+  salL +
+  plot_layout(ncol = 2,
+              guides = 'collect') &
+  plot_annotation(tag_levels = c('A', '1')) &
+  theme(legend.position = "right")
+```
+
+```{r graphs (temperature)}
+tempL <- 
+compL %>% 
+  ggplot() +
+  geom_point(aes(x = pco2_meas, y = pco2_out, colour = t_c)) +
+  geom_smooth(aes(x = pco2_meas, y = pco2_out), method = lm, se = FALSE) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "black") +
+  theme_bw() +
+  xlim(175, 575) +
+  ylim(175, 575) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c("y = ",
+                         round(model_L$coefficients[[2]], digits = 2),
+                         "x",
+                         " + ",
+                         round(model_L$coefficients[[1]], digits = 2),
+                         sep = ""),
+           hjust = 0,
+           vjust = 0) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c('R^2 ==',
+                         round(model_L_sum$r.squared, digits = 2)),
+           parse = TRUE,
+           hjust = 0,
+           vjust = 1.5) +
+  labs(
+    x = expression(Measured~pCO[2]~(mu*atm)),
+    y = expression(Calulated~pCO[2]~(mu*atm)),
+    colour = "Temperature (c)",
+    title = "Lueker et al., 2000"
+  )
+
+tempM <- 
+compM %>% 
+    ggplot() +
+  geom_point(aes(x = pco2_meas, y = pco2_out, colour = t_c)) +
+  geom_smooth(aes(x = pco2_meas, y = pco2_out), method = lm, se = FALSE) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "black") +
+  theme_bw() +
+  xlim(175, 575) +
+  ylim(175, 575) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c("y = ",
+                         round(model_M$coefficients[[2]], digits = 2),
+                         "x",
+                         " + ",
+                         round(model_M$coefficients[[1]], digits = 2),
+                         sep = ""),
+           hjust = 0,
+           vjust = 0) +
+  annotate(geom = "text",
+           x = 175,
+           y = 550,
+           label = str_c('R^2 ==',
+                         round(model_M_sum$r.squared, digits = 2)),
+           parse = TRUE,
+           hjust = 0,
+           vjust = 1.5) +
+  labs(
+    x = expression(Measured~pCO[2]~(mu*atm)),
+    y = expression(Calulated~pCO[2]~(mu*atm)),
+    colour = "Temperature (c)",
+    title = "Millero, 2010"
+  )
+
+temperature_plots <- tempM +
+  tempL +
+  plot_layout(ncol = 2,
+              guides = 'collect') &
+  plot_annotation(tag_levels = c('A', '1')) &
+  theme(legend.position = "right")
+```
+
+```{r graphs (differences)}
+diffL <- compL %>% 
+  ggplot() +
+  geom_point(aes(x = t_c, y = difference, colour = s)) +
+  geom_smooth(aes(x = t_c, y = difference), method = lm, se = FALSE) +
+  theme_bw() +
+  ylim(-75, 320) +
+  xlim(-2, 7.5) +
+  labs(
+    x = "Temperature (c)",
+    y = expression(Measured~pCO[2]~-~Calulated~pCO[2]~(mu*atm)),
+    colour = "Salinity (psu)",
+    title = "Lueker et al., 2000")
+
+diffM <- compM %>% 
+    ggplot() +
+  geom_point(aes(x = t_c, y = difference, colour = s)) +
+  geom_smooth(aes(x = t_c, y = difference), method = lm, se = FALSE) +
+  theme_bw() +
+  ylim(-75, 320) +
+  xlim(-2, 7.5) +
+  labs(
+    x = "Temperature (c)",
+    y = expression(Measured~pCO[2]~-~Calulated~pCO[2]~(mu*atm)),
+    colour = "Salinity (psu)",
+    title = "Millero, 2010")
+
+difference_plots <- diffM +
+  diffL +
+  plot_layout(ncol = 2,
+              guides = 'collect') &
+  plot_annotation(tag_levels = c('A', '1')) &
+  theme(legend.position = "right")
+```
+
+```{r print plots}
+print(difference_plots)
+print(salinity_plots)
+print(temperature_plots)
+```
+
+```{r save plots}
+
+```
