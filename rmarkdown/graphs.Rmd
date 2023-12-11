@@ -77,9 +77,9 @@ compL %>%
            hjust = 0,
            vjust = 1.5) +
   labs(
-    x = expression(Measured~pCO[2]~(mu*atm)),
-    y = expression(Calulated~pCO[2]~(mu*atm)),
-    colour = "Temperature (c)",
+    x = "",
+    y = "",
+    colour = "Salinity (psu)",
     title = "Lueker et al., 2000"
   )
 
@@ -114,7 +114,7 @@ compM %>%
   labs(
     x = expression(Measured~pCO[2]~(mu*atm)),
     y = expression(Calulated~pCO[2]~(mu*atm)),
-    colour = "Temperature (c)",
+    colour = "Salinity (psu)",
     title = "Millero, 2010"
   )
 
@@ -156,8 +156,8 @@ compL %>%
            hjust = 0,
            vjust = 1.5) +
   labs(
-    x = expression(Measured~pCO[2]~(mu*atm)),
-    y = expression(Calulated~pCO[2]~(mu*atm)),
+    x = "",
+    y = "",
     colour = "Temperature (c)",
     title = "Lueker et al., 2000"
   )
@@ -214,8 +214,8 @@ diffL <- compL %>%
   ylim(-75, 320) +
   xlim(-2, 7.5) +
   labs(
-    x = "Temperature (c)",
-    y = expression(Measured~pCO[2]~-~Calulated~pCO[2]~(mu*atm)),
+    x = "",
+    y = "",
     colour = "Salinity (psu)",
     title = "Lueker et al., 2000")
 
@@ -247,5 +247,12 @@ print(temperature_plots)
 ```
 
 ```{r save plots}
+ggsave(here("figures", "diff_plots.png"), difference_plots,
+       width = 190, height = 120, units = "mm")
 
+ggsave(here("figures", "sal_plots.png"), salinity_plots,
+       width = 190, height = 120, units = "mm")
+
+ggsave(here("figures", "temp_plots.png"), temperature_plots,
+       width = 190, height = 120, units = "mm")
 ```
